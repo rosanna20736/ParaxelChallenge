@@ -3,6 +3,14 @@ package com.company;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
 
 public class Main {
 
@@ -11,11 +19,22 @@ public class Main {
         String line = "";
         String cvsSplitBy = ",";
 
-        String[] patients;
+        String[] Data;
+        String[][] patients = new String[201][8];
+        int counter = 0;
         try (BufferedReader br = new BufferedReader(new FileReader(csvFile))) {
             while ((line = br.readLine()) != null) {
-                patients = line.split(cvsSplitBy);
-                System.out.println("Patient_ID = " + patients[0] + "\t, Age = " + patients[1] + "\t, Gender = " + patients[2] + "\t, Height = " + patients[3] + "\t, Weight = " + patients[4] + "\t, Smoke = " + patients[5] + "\t, Site = " + patients[6] + "\t, Drug = " + patients[7]);
+                Data = line.split(cvsSplitBy);
+                patients[counter][0] = Data[0];
+                patients[counter][1] = Data[1];
+                patients[counter][2] = Data[2];
+                patients[counter][3] = Data[3];
+                patients[counter][4] = Data[4];
+                patients[counter][5] = Data[5];
+                patients[counter][6] = "unknown";
+                patients[counter][7] = "unknown";
+                System.out.println("Patient_ID = " + patients[counter][0] + ", Age = " + patients[counter][1] + ", Gender = " + patients[counter][2] + ", Height = " + patients[counter][3] + ", Weight = " + patients[counter][4] + ", Smoke = " + patients[counter][5] + ", Site = " + patients[counter][6] + ", Drug = " + patients[counter][7]);
+                counter++;
             }
         } catch (IOException e) {
             e.printStackTrace();
