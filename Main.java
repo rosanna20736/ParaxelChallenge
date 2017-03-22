@@ -3,15 +3,6 @@ package com.company;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
-
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
-import java.util.Objects;
 
 public class Main {
     private static int counterPlacebo;
@@ -19,14 +10,18 @@ public class Main {
 
     public static void main(String[] args) {
         String[][] patients = readData();
-        int females = countFemale(patients);
-        System.out.println("females =  " + females);
-        int smokers = countSmoke(patients);
-        System.out.println("smokers =  " + smokers);
-        patients = formGroups(patients, females, smokers);
+        int femalesNonSmokers = countNonSmokeFemale(patients);
+        System.out.println("non smoking females =  " + femalesNonSmokers);
+        int malesNonSmokers = countNonSmokeMale(patients);
+        System.out.println("non smoking males =  " + malesNonSmokers);
+        int femalesSmokers = countFemaleSmoke(patients);
+        System.out.println("smoking females =  " + femalesSmokers);
+        int maleSmokers = countMaleSmoke(patients);
+        System.out.println("smoking males =  " + maleSmokers);
+        patients = formGroups(patients, femalesNonSmokers, malesNonSmokers, femalesSmokers, maleSmokers);
+        int numberOfGroups = 25;
+        patients = assignSite(patients, numberOfGroups);
         printAll(patients);
-        System.out.println("Real =  " + counterReal);
-        System.out.println("Placebo =  " + counterPlacebo);
     }
 
     public static String[][] readData() {
@@ -48,7 +43,6 @@ public class Main {
                 patients[counter][5] = Data[5];
                 patients[counter][6] = "unknown";
                 patients[counter][7] = "unknown";
-                //System.out.println("Patient_ID = " + patients[counter][0] + ", Age = " + patients[counter][1] + ", Gender = " + patients[counter][2] + ", Height = " + patients[counter][3] + ", Weight = " + patients[counter][4] + ", Smoke = " + patients[counter][5] + ", Site = " + patients[counter][6] + ", Drug = " + patients[counter][7]);
                 counter++;
             }
         } catch (IOException e) {
@@ -57,41 +51,60 @@ public class Main {
         return patients;
     }
 
-    public static int countFemale(String[][] patients) {
+    public static int countNonSmokeFemale(String[][] patients) {
         int females = 0;
         for (int i = 1; i < 201; i++) {
-            if (patients[i][2].equals(patients[1][2])) {
+            if (patients[i][2].equals(patients[1][2]) && !(patients[i][5].equals(patients[1][5]))) {
                 females++;
-                //System.out.println("females =  " + females);
             }
         }
         return females;
     }
 
-    public static int countSmoke(String[][] patients) {
+    public static int countNonSmokeMale(String[][] patients) {
+        int females = 0;
+        for (int i = 1; i < 201; i++) {
+            if (!(patients[i][2].equals(patients[1][2])) && !(patients[i][5].equals(patients[1][5]))) {
+                females++;
+            }
+        }
+        return females;
+    }
+
+    public static int countFemaleSmoke(String[][] patients) {
         int smokers = 0;
         for (int i = 1; i < 201; i++) {
-            if (patients[i][5].equals(patients[1][5])) {
+            if (patients[i][5].equals(patients[1][5]) && patients[i][2].equals(patients[1][2])) {
                 smokers++;
-                //System.out.println("smokers =  " + smokers);
             }
         }
         return smokers;
     }
 
-    public static String[][] formGroups(String[][] patients, int females, int smokers) {
-        patients = balanceSmokers(patients, smokers);
-        patients = balanceFemales(patients, females);
-        patients = balanceGroups(patients);
+    public static int countMaleSmoke(String[][] patients) {
+        int smokers = 0;
+        for (int i = 1; i < 201; i++) {
+            if (patients[i][5].equals(patients[1][5]) && !(patients[i][2].equals(patients[1][2]))) {
+                smokers++;
+            }
+        }
+        return smokers;
+    }
+
+    public static String[][] formGroups(String[][] patients, int femalesNonSmokers, int malesNonSmokers, int femalesSmokers, int malesSmokers) {
+        patients = balanceFemalesNonSmokers(patients, femalesNonSmokers);
+        patients = balanceFemalesSmokers(patients, femalesSmokers);
+        patients = balanceMalesSmokers(patients, malesSmokers);
+        patients = balanceMalesNonSmokers(patients, malesNonSmokers);
         return patients;
     }
 
-    public static String[][] balanceFemales(String[][] patients, int females) {
+    public static String[][] balanceFemalesNonSmokers(String[][] patients, int femalesNonSmokers) {
         int female1 = 0;
         int female2 = 0;
-        int femaleRatio = (int) Math.ceil(females/2);
+        int femaleRatio = (int) Math.ceil(femalesNonSmokers/2);
         for (int i = 1; i < 201; i++) {
-            if (patients[i][2].equals(patients[1][2])) {
+            if (patients[i][2].equals(patients[1][2]) && !(patients[i][5].equals(patients[1][5]))) {
                 if (Math.random() < 0.5 && female1 < femaleRatio) {
                     patients[i][7] = "Real";
                     counterReal++;
@@ -102,7 +115,7 @@ public class Main {
                     female2++;
                 } else {
                     patients[i][7] = "Real";
-                    counterPlacebo++;
+                    counterReal++;
                     female1++;
                 }
             }
@@ -110,31 +123,55 @@ public class Main {
         return patients;
     }
 
-    public static String[][] balanceSmokers(String[][] patients, int smokers) {
-        int smoker1 = 0;
-        int smoker2 = 0;
-        int smokerRatio = (int) Math.ceil(smokers/2);
+    public static String[][] balanceFemalesSmokers(String[][] patients, int femalesSmokers) {
+        int female1 = 0;
+        int female2 = 0;
+        int femaleRatio = (int) Math.ceil(femalesSmokers/2);
         for (int i = 1; i < 201; i++) {
-            if (!(patients[i][2].equals(patients[1][2])) && patients[i][5].equals(patients[1][5])) {
-                if (Math.random() < 0.5 && smoker1 < smokerRatio) {
+            if (patients[i][2].equals(patients[1][2]) && patients[i][5].equals(patients[1][5])) {
+                if (Math.random() < 0.5 && female1 < femaleRatio) {
                     patients[i][7] = "Real";
                     counterReal++;
-                    smoker1++;
-                } else if (smoker2 < smokerRatio) {
+                    female1++;
+                } else if (female2 < femaleRatio) {
                     patients[i][7] = "Placebo";
                     counterPlacebo++;
-                    smoker2++;
+                    female2++;
                 } else {
                     patients[i][7] = "Real";
                     counterReal++;
-                    smoker1++;
+                    female1++;
                 }
             }
         }
         return patients;
     }
 
-    public static String[][] balanceGroups(String[][] patients) {
+    public static String[][] balanceMalesSmokers(String[][] patients, int malesSmokers) {
+        int male1 = 0;
+        int male2 = 0;
+        int maleRatio = (int) Math.ceil(malesSmokers/2);
+        for (int i = 1; i < 201; i++) {
+            if (!(patients[i][2].equals(patients[1][2])) && patients[i][5].equals(patients[1][5])) {
+                if (Math.random() < 0.5 && male1 < maleRatio) {
+                    patients[i][7] = "Real";
+                    counterReal++;
+                    male1++;
+                } else if (male2 < maleRatio) {
+                    patients[i][7] = "Placebo";
+                    counterPlacebo++;
+                    male2++;
+                } else {
+                    patients[i][7] = "Real";
+                    counterReal++;
+                    male1++;
+                }
+            }
+        }
+        return patients;
+    }
+
+    public static String[][] balanceMalesNonSmokers(String[][] patients, int malesNonSmokers) {
         for (int i = 1; i < 201; i++) {
             if (!(patients[i][2].equals(patients[1][2])) && !(patients[i][5].equals(patients[1][5]))) {
                 if (Math.random() < 0.5 && counterReal < 100) {
@@ -158,8 +195,15 @@ public class Main {
         }
     }
 
-    public static String[][] assignSite(String[][] patients) {
-        //////
+    public static String[][] assignSite(String[][] patients, int numberOfGroups) {
+        int numberOfPeople = (int) Math.ceil(200/numberOfGroups);
+        int counter = 1;
+        for (int j = 1; j <= numberOfGroups; j++) {
+            for (int i = 0; i < numberOfPeople; i++) {
+                patients[counter][6] = Integer.toString(j);
+                counter++;
+            }
+        }
         return patients;
     }
 }
